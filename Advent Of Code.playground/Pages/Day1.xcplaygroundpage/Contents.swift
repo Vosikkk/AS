@@ -26,9 +26,12 @@ typealias Numbers =  [(index: Int, number: String)]
 
 func main() {
     let lines = input.components(separatedBy: "\n")
-    let result = lines.map { handleNumbers(from: $0) }
-        .map { get(from: $0) }
+    let result = lines
+        .map { handleNumbers(from: $0) }
+        .flatMap { $0.sorted { $0.index < $1.index } }
+        .map { getFirstAndLast(from: $0) }
         .reduce(0) { $0 + ($1 ?? 0) }
+    
     print(result)
 }
 
@@ -45,11 +48,10 @@ func handleNumbers(from line: String) -> Numbers {
             startIndex = range.upperBound
         }
     }
-    
-    return foundMatches.sorted { $0.index < $1.index }
+    return foundMatches
 }
 
-func get(from numbers: Numbers) -> Int? {
+func getFirstAndLast(from numbers: Numbers) -> Int? {
     if let first = numbers.first?.number, let last = numbers.last?.number {
         return Int(first + last)
     }
