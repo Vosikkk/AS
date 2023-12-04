@@ -1,7 +1,45 @@
 import Foundation
 
 
-let numbers: [String: String] = [
+func main(input: String) {
+    let replacedInput = input.replaceLiterals(using: literalNumbers)
+    let result = calculate(for: replacedInput)
+    print(result)
+}
+
+
+
+func calculate(for input: String) -> Int {
+    var result = 0
+    input.enumerateLines { line, _ in
+        let digits = line.extractDigits()
+        if let firstDigit = digits.first, let lastDigit = digits.last {
+            result += Int("\(firstDigit)\(lastDigit)") ?? 0
+        }
+    }
+    return result
+}
+
+
+extension String {
+    
+    func extractDigits() -> String {
+        return filter(\.isNumber)
+    }
+    
+    func replaceLiterals(using replacements: [String: String]) -> String {
+        var result = self
+        replacements.forEach { (key, value) in
+            let replacement = "\(key.first!)\(value)\(key.last!)"
+            result = result.replacingOccurrences(of: key, with: replacement, options: .caseInsensitive)
+        }
+        return result
+    }
+}
+
+
+
+private let literalNumbers = [
     "one": "1",
     "two": "2",
     "three": "3",
@@ -10,54 +48,8 @@ let numbers: [String: String] = [
     "six": "6",
     "seven": "7",
     "eight": "8",
-    "nine": "9",
-    "1": "1",
-    "2": "2",
-    "3": "3",
-    "4": "4",
-    "5": "5",
-    "6": "6",
-    "7": "7",
-    "8": "8",
-    "9": "9"
+    "nine": "9"
 ]
-
-typealias Numbers =  [(index: Int, number: String)]
-
-func main() {
-    let lines = input.components(separatedBy: "\n")
-    let result = lines
-        .map { handleNumbers(from: $0) }
-        .flatMap { $0.sorted { $0.index < $1.index } }
-        .map { getFirstAndLast(from: $0) }
-        .reduce(0) { $0 + ($1 ?? 0) }
-    
-    print(result)
-}
-
-
-func handleNumbers(from line: String) -> Numbers {
-    
-    var foundMatches: Numbers = []
-    
-    for (key, value) in numbers {
-        var startIndex = line.startIndex
-        while let range = line[startIndex...].range(of: key) {
-            let index = line.distance(from: line.startIndex, to: range.lowerBound)
-            foundMatches.append((index, value))
-            startIndex = range.upperBound
-        }
-    }
-    return foundMatches
-}
-
-func getFirstAndLast(from numbers: Numbers) -> Int? {
-    if let first = numbers.first?.number, let last = numbers.last?.number {
-        return Int(first + last)
-    }
-    return nil
-}
-
 
 let input = """
 four82nine74
@@ -1061,4 +1053,13 @@ fpctmmvvnbftv2
 nkxmdshm5twoseven672
 88788jnscmpqr66sxcjx
 """
-main()
+
+
+main(input: input)
+
+
+
+
+
+
+
