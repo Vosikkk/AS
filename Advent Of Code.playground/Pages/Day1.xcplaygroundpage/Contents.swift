@@ -3,16 +3,19 @@ import Foundation
 
 func main(input: String) {
     let replacedInput = input.replaceLiterals(using: literalNumbers)
-    let result = calculate(for: replacedInput)
+    let result = computeSumOfNumerals(in: replacedInput)
     print(result)
 }
 
 
-
-func calculate(for input: String) -> Int {
+func computeSumOfNumerals(in input: String) -> Int {
+    
     var result = 0
+    
     input.enumerateLines { line, _ in
+        
         let digits = line.extractDigits()
+        
         if let firstDigit = digits.first, let lastDigit = digits.last {
             result += Int("\(firstDigit)\(lastDigit)") ?? 0
         }
@@ -29,14 +32,15 @@ extension String {
     
     func replaceLiterals(using replacements: [String: String]) -> String {
         var result = self
-        replacements.forEach { (key, value) in
+        
+        replacements.forEach { key, value in
+            
             let replacement = "\(key.first!)\(value)\(key.last!)"
             result = result.replacingOccurrences(of: key, with: replacement, options: .caseInsensitive)
         }
         return result
     }
 }
-
 
 
 private let literalNumbers = [
