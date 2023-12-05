@@ -2,6 +2,95 @@
 import Foundation
 
 
+typealias Cubes = [CubeColor: Int]
+
+typealias Result = (sumOfGamesID: Int, maxPower: Int)
+
+enum CubeColor {
+    case red
+    case green
+    case blue
+
+    var limit: Int {
+        switch self {
+        case .red: return 12
+        case .green: return 13
+        case .blue: return 14
+        }
+    }
+}
+
+func main(input: String) {
+    let result = processGame(from: input)
+    print("Sum of Possible Games ID: \(result.sumOfGamesID) and sum of the power: \(result.maxPower)")
+}
+
+func processGame(from input: String) -> Result {
+    var maxPower = 0
+    var sumOfGamesID = 0
+    
+    for line in test.components(separatedBy: .newlines) {
+        
+        var isPossible = true
+        
+        guard let colonIndex = line.firstIndex(of: ":") else { continue }
+        
+        guard let gameId =  line[..<colonIndex].components(separatedBy: .whitespaces).compactMap { Int($0) }.first else { continue }
+        
+        let gameSets = line.suffix(from: line.index(after: colonIndex)).components(separatedBy: ";")
+        
+        var maxColorCounts: Cubes = [.red: 0, .green: 0, .blue: 0]
+        
+        for gameSet in gameSets {
+            
+            var colorCounts: Cubes = [.red: 0, .green: 0, .blue: 0]
+            
+            processGameSet(gameSet, colorCounts: &colorCounts)
+            
+            checkMax(between: colorCounts, and: &maxColorCounts)
+            
+            isPossible = isPossible && іsGamePossible(with: colorCounts)
+        }
+        
+        maxPower += maxColorCounts.values.reduce (1, *)
+        
+        if isPossible {
+            sumOfGamesID += gameId
+        }
+    }
+    return (sumOfGamesID, maxPower)
+}
+
+
+func checkMax(between currentColors: Cubes, and minColorFor: inout Cubes) {
+    for (color, count) in currentColors {
+        minColorFor[color] = max(minColorFor[color, default: count], count)
+    }
+}
+
+func іsGamePossible(with colorCounts: Cubes) -> Bool {
+    return !colorCounts.contains { $0.value > $0.key.limit }
+}
+
+func processGameSet(_ gameSet: String, colorCounts: inout Cubes) {
+ 
+    let cubesForOne = gameSet.components(separatedBy: ",")
+ 
+    for oneCube in cubesForOne {
+        let countString = oneCube.trimmingCharacters(in: .whitespaces).prefix(while: { "0"..."9" ~= $0 })
+        if let count = Int(countString) {
+            switch oneCube {
+            case _ where oneCube.contains("red"): colorCounts[.red]! += count
+            case _ where oneCube.contains("green"): colorCounts[.green]! += count
+            case _ where oneCube.contains("blue"): colorCounts[.blue]! += count
+            default: break
+            }
+        }
+    }
+}
+
+
+
 let test = """
 Game 1: 4 red, 8 green; 8 green, 6 red; 13 red, 8 green; 2 blue, 4 red, 4 green
 Game 2: 5 blue; 1 red, 3 blue; 1 red, 7 blue, 1 green; 1 red, 8 blue; 7 blue, 1 red; 4 blue, 1 green, 1 red
@@ -104,49 +193,4 @@ Game 98: 9 blue, 2 green; 4 red, 6 blue, 3 green; 2 red; 14 red, 12 blue
 Game 99: 4 red, 3 green, 3 blue; 2 red, 2 blue; 7 green, 3 blue; 5 red, 2 green
 Game 100: 5 green, 7 red, 4 blue; 11 green, 9 red, 8 blue; 2 blue, 12 green
 """
-
-
-var sumOfGamesID = 0
-
-test.enumerateLines { line, _ in
-    
-    var isPossible = true
- 
-    guard let colonIndex = line.firstIndex(of: ":") else { return }
-
-    let gameIdString = line[..<colonIndex].components(separatedBy: .whitespaces).compactMap { Int($0) }.first
-    guard let gameId = gameIdString else { return }
-
-    let gameSets = line.suffix(from: line.index(after: colonIndex)).components(separatedBy: ";")
-    
-    for gameSet in gameSets {
-        
-        var red = 0
-        var green = 0
-        var blue = 0
-        
-        let cubsForOne = gameSet.components(separatedBy: ",")
-       
-        for oneCube in cubsForOne {
-            let countString = oneCube.trimmingCharacters(in: .whitespaces).prefix(while: { "0"..."9" ~= $0 })
-            if let count = Int(countString) {
-                switch oneCube {
-                case _ where oneCube.contains("red"): red += count
-                case _ where oneCube.contains("green"): green += count
-                case _ where oneCube.contains("blue"): blue += count
-                default: break
-                }
-            }
-        }
-        if red > 12 || green > 13 || blue > 14 {
-            isPossible = false
-            break
-        }
-    }
-    
-    if isPossible {
-        sumOfGamesID += gameId
-    }
-}
-
-print("Sum of Possible Games ID: \(sumOfGamesID)")
+main(input: test)
