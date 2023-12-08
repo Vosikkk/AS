@@ -22,7 +22,7 @@ enum CubeColor {
 
 func main(input: String) {
     let result = processGame(from: input)
-    print("Sum of Possible Games ID: \(result.sumOfGamesID) and sum of the power: \(result.maxPower)")
+    print("Sum of Possible Games ID: \(result.sumOfGamesID) and Sum of the Power: \(result.maxPower)")
 }
 
 func processGame(from input: String) -> Result {
@@ -45,7 +45,7 @@ func processGame(from input: String) -> Result {
             
             var colorCounts: Cubes = [.red: 0, .green: 0, .blue: 0]
             
-            processGameSet(gameSet, colorCounts: &colorCounts)
+            processGame(set: gameSet, colorCounts: &colorCounts)
             
             checkMax(between: colorCounts, and: &maxColorCounts)
             
@@ -64,7 +64,7 @@ func processGame(from input: String) -> Result {
 
 func checkMax(between currentColors: Cubes, and minColorFor: inout Cubes) {
     for (color, count) in currentColors {
-        minColorFor[color] = max(minColorFor[color, default: count], count)
+        minColorFor[color] = max(minColorFor[color]!, count)
     }
 }
 
@@ -72,7 +72,7 @@ func іsGamePossible(with colorCounts: Cubes) -> Bool {
     return !colorCounts.contains { $0.value > $0.key.limit }
 }
 
-func processGameSet(_ gameSet: String, colorCounts: inout Cubes) {
+func processGame(set gameSet: String, colorCounts: inout Cubes) {
  
     let cubesForOne = gameSet.components(separatedBy: ",")
  
