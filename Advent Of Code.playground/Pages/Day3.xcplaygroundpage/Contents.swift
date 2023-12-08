@@ -55,35 +55,28 @@ func getEndIndex(from index: Int, in line: [Character]) -> Int {
 
 
 func check(_ matrix: [[Character]], startingFrom numberStart: Int, upTo numberEnd: Int, atRow row: Int) -> Bool {
-   
-    // left side
-    for i in -1...1 {
-        let rowIndex = row + i
-        if isCorrectIndex(row: rowIndex, column: numberStart - 1, matrix: matrix), matrix[rowIndex][numberStart - 1].isSymBol {
-            return true
-        }
-    }
     
-    // upper and bottom
-    for i in numberStart...numberEnd {
-        let up = row - 1
-        let down = row + 1
-        if isCorrectIndex(row: up, column: i, matrix: matrix), matrix[up][i].isSymBol {
-            return true
+    // Check left
+    let leftSide = (-1...1).contains { i in
+            let rowIndex = row + i
+            return isCorrectIndex(row: rowIndex, column: numberStart - 1, matrix: matrix) && matrix[rowIndex][numberStart - 1].isSymBol
         }
-        if isCorrectIndex(row: down, column: i, matrix: matrix), matrix[down][i].isSymBol {
-            return true
+
+        // Check upper and bottom
+        let upperAndBottom = (numberStart...numberEnd).contains { i in
+            let up = row - 1
+            let down = row + 1
+            return (isCorrectIndex(row: up, column: i, matrix: matrix) && matrix[up][i].isSymBol) ||
+                   (isCorrectIndex(row: down, column: i, matrix: matrix) && matrix[down][i].isSymBol)
         }
-    }
-    
-    // right side
-    for i in -1...1 {
-        let rowIndex = row + i
-        if isCorrectIndex(row: rowIndex, column: numberEnd + 1, matrix: matrix), matrix[rowIndex][numberEnd + 1].isSymBol {
-            return true
+
+        // Check right side
+        let rightSide = (-1...1).contains { i in
+            let rowIndex = row + i
+            return isCorrectIndex(row: rowIndex, column: numberEnd + 1, matrix: matrix) && matrix[rowIndex][numberEnd + 1].isSymBol
         }
-    }
-    return false
+
+        return leftSide || upperAndBottom || rightSide
 }
 
 
