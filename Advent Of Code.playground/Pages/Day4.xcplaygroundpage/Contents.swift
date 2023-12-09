@@ -1,6 +1,6 @@
 import Foundation
 
-
+//
 
 func main( _ data: String) {
     let result = calculate(data)
