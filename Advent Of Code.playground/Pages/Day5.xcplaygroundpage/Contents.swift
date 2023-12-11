@@ -266,36 +266,41 @@ humidity-to-location map:
 0 280123413 3244927
 """
 
-
-
-
-
-
 let parts = input.components(separatedBy: "\n\n")
-var seeds = parts[0].components(separatedBy: ":")[1].split(separator: " ").compactMap { Int($0) }
-    
-for block in parts.dropFirst() {
-    
-    var ranges: [(Int, Int, Int)] = []
-    
-    let blockLines = block.components(separatedBy: "\n")
-    
-    for line in blockLines.dropFirst() {
-        let range = line.split(separator: " ").compactMap { Int($0) }
-        ranges.append((range[0], range[1], range[2]))
-    }
-    
-    seeds = seeds.map { seed in
-            for (a, b, c) in ranges {
-                if b <= seed && seed < b + c {
-                    return seed - b + a
+
+let result = parts.dropFirst()
+    .reduce(parts[0].components(separatedBy: ":")[1].split(separator: " ")
+        .compactMap { Int($0) }) { currentSeeds, block in
+            
+            let ranges = block.components(separatedBy: "\n").dropFirst()
+                
+                .compactMap { line -> (Int, Int, Int)? in // three numbers from each line
+                   
+                    let components = line.split(separator: " ").compactMap { Int($0) }
+                    guard components.count >= 3 else { return nil }
+                   
+                    return (components[0], components[1], components[2])// tuple where a = destination range start
+                                                                        //             b = source range start
+                                                                        //             c = range length
                 }
+            
+            return currentSeeds.map { seed in
+                for (a, b, c) in ranges where b <= seed && seed < b + c { // very interesting desicion I found on the internet
+                    return seed - b + a // 52 50 48 with seed 79 so 50 <= 79 < 50 + 48 = 81 and it's correct answer :)
+                }
+                return seed
             }
-            return seed
         }
-    }
-   
-print(seeds.min())
-    
+
+print(result.min() ?? 0)
+
+
+
+
+
+
+
+
+
 
 
