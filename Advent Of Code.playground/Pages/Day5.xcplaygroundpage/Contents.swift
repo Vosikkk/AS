@@ -1,6 +1,110 @@
 
 import Foundation
 
+// MARK: - Task 1
+func calculateFirstTask(from parts: [String]) -> Int {
+    
+    let result = parts.dropFirst()
+        .reduce(parts[0].components(separatedBy: ":")[1].split(separator: " ")
+            .compactMap { Int($0) }) { currentSeeds, block in
+                
+                let ranges = block.components(separatedBy: "\n").dropFirst()
+                
+                    .compactMap { line -> (Int, Int, Int)? in // three numbers from each line
+                        
+                        let components = line.split(separator: " ").compactMap { Int($0) }
+                        guard components.count >= 3 else { return nil }
+                        
+                        return (components[0], components[1], components[2])// tuple where a = destination range start
+                        //             b = source range start
+                        //             c = range length
+                    }
+                
+                return currentSeeds.map { seed in
+                    for (a, b, c) in ranges where b <= seed && seed < b + c { // very interesting desicion I found on the internet
+                        return seed - b + a // 52 50 48 with seed 79 so 50 <= 79 < 50 + 48 = 81 and it's correct answer :)
+                    }
+                    return seed
+                }
+            }
+    
+    return result.min() ?? 0
+    
+}
+
+// MARK: - Task 2
+
+func calculateSecondTask(from parts: [String]) -> Int {
+    
+    let seedRanges = parts.first!.components(separatedBy: ":")[1].split(separator: " ").compactMap { Int($0) }
+    
+    var seeds: [(start: Int, end: Int)] = stride(from: 0, to: seedRanges.count, by: 2).map {// now we have pair of seeds from start to end
+        (seedRanges[$0], seedRanges[$0] + seedRanges[$0 + 1])
+    }
+    
+    for part in parts.dropFirst() {
+        
+        let ranges: [(a: Int, b: Int, c: Int)] = part
+            .components(separatedBy: "\n")
+            .dropFirst()
+            .map { line in
+                let range = line.split(separator: " ").compactMap { Int($0) }
+                return (range[0], range[1], range[2])
+            }
+        
+        var newSeeds: [(start: Int, end: Int)] = []
+        
+        while let (start, end) = seeds.popLast() { // take pair
+            
+            // Checking if there exists a range (a, b, c) in the ranges array,
+            // such that start < b + c and end > b.
+           
+            if let (a, b, c) = ranges.first(where: { start < $0.b + $0.c && end > $0.b } ) {
+                
+                // Calculating the start and end of the intersection of ranges.
+                
+                let intersectionStart = max(start, b)
+                let intersectionEnd = min(end, b + c)
+                
+                
+                newSeeds.append((intersectionStart - b + a, intersectionEnd - b + a))
+                
+                // If the start of the intersection is greater than the start of the current range
+                
+                if intersectionStart > start {
+                    seeds.append((start, intersectionStart))
+                }
+                
+                // If the end of the intersection is less than the end of the current range,
+                
+                if end > intersectionEnd {
+                    seeds.append((intersectionEnd, end))
+                }
+                
+            } else { // If no intersection is found, add the current range (start, end)
+                newSeeds.append((start, end))
+            }
+        }
+        
+        seeds = newSeeds
+    }
+    
+    return seeds.min(by: { $0.start < $1.start })?.start ?? 0
+}
+
+
+
+func main(_ input: String) {
+    let parts = input.components(separatedBy: "\n\n")
+        
+        let firstRes = calculateFirstTask(from: parts)
+        let secondRes = calculateSecondTask(from: parts)
+
+        print("""
+              Lowest location number Task1: \(firstRes)
+              Lowest location number Task2: \(secondRes)
+              """)
+}
 
 let test = """
 seeds: 79 14 55 13
@@ -265,42 +369,4 @@ humidity-to-location map:
 1469280759 1124064666 282509988
 0 280123413 3244927
 """
-
-let parts = input.components(separatedBy: "\n\n")
-
-let result = parts.dropFirst()
-    .reduce(parts[0].components(separatedBy: ":")[1].split(separator: " ")
-        .compactMap { Int($0) }) { currentSeeds, block in
-            
-            let ranges = block.components(separatedBy: "\n").dropFirst()
-                
-                .compactMap { line -> (Int, Int, Int)? in // three numbers from each line
-                   
-                    let components = line.split(separator: " ").compactMap { Int($0) }
-                    guard components.count >= 3 else { return nil }
-                   
-                    return (components[0], components[1], components[2])// tuple where a = destination range start
-                                                                        //             b = source range start
-                                                                        //             c = range length
-                }
-            
-            return currentSeeds.map { seed in
-                for (a, b, c) in ranges where b <= seed && seed < b + c { // very interesting desicion I found on the internet
-                    return seed - b + a // 52 50 48 with seed 79 so 50 <= 79 < 50 + 48 = 81 and it's correct answer :)
-                }
-                return seed
-            }
-        }
-
-print(result.min() ?? 0)
-
-
-
-
-
-
-
-
-
-
-
+main(input)
