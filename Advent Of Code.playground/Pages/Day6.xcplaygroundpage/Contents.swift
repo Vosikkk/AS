@@ -36,10 +36,13 @@ let time = Int(lines[0].split(separator: ":")[1].split(separator: " ").joined())
 let distance = Int(lines[1].split(separator: ":")[1].split(separator: " ").joined())
 
 func waysToWin(time: Int, distance: Int) -> Int {
+    
+    // Calculate the roots of the quadratic equation.
     let a = (Double(time) - sqrt(pow(Double(time), 2) - 4 * Double(distance))) / 2
     let b = (Double(time) + sqrt(pow(Double(time), 2) - 4 * Double(distance))) / 2
     
-    return  Int(floor(b) - ceil(a) + 1)
+    // This is because the number of ways to win is the number of integers between 'a' and 'b', inclusive.
+    return Int(floor(b) - ceil(a) + 1)
 }
 let resultTask2 = waysToWin(time: time!, distance: distance!)
 
