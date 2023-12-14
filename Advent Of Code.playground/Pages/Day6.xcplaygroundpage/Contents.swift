@@ -2,10 +2,8 @@
 import Foundation
 
 let test = """
-
 Time:      7  15   30
 Distance:  9  40  200
-
 """
 
 let data = """
