@@ -2,36 +2,72 @@ import Foundation
 
 typealias Hand = (String, Int)
 
-func calculateWinnings(of handsAndBids: [Hand]) -> Int {
-    let cardValues = "AKQJT98765432"
 
-    func getType(of hand: String) -> Int {
-        let counts = Dictionary(grouping: hand, by: { $0 }).map { $0.value.count }
-        let sortedCounts = counts.sorted(by: { $0 > $1 })
+enum HandType: Int {
+    case fiveOfKind, fourOfKind, fullHouse, threeOfKind, twoPair, onePair, highCard
+}
 
-        if sortedCounts == [5] {
-            return 0 // Five of a kind
-        } else if sortedCounts == [4, 1] {
-            return 1 // Four of a kind
-        } else if sortedCounts == [3, 2] {
-            return 2 // Full house
-        } else if sortedCounts == [3, 1, 1] {
-            return 3 // Three of a kind
-        } else if sortedCounts == [2, 2, 1] {
-            return 4 // Two pair
-        } else if sortedCounts == [2, 1, 1, 1] {
-            return 5 // One pair
-        } else {
-            return 6 // High card
+// MARK: - Task1(when false), Task2(when true)
+
+func main(_ input: String) {
+    
+    let handsAndBids: [Hand] = input.components(separatedBy: "\n")
+        .map { line in
+            (line.components(separatedBy: " ")[0], Int(line.components(separatedBy: " ")[1]) ?? 0)
+        }
+    let result = calculateWinnings(of: handsAndBids, considerJokers: true)
+    print(result)
+}
+
+
+func calculateWinnings(of handsAndBids: [Hand], considerJokers: Bool) -> Int {
+    
+    let cardValues = considerJokers ? "AKQT98765432J" : "AKQJT98765432"
+    
+    func getType(of hand: String) -> HandType {
+        
+        var counts = Dictionary(grouping: hand, by: { $0 }).mapValues { $0.count }
+        
+        if considerJokers {
+            
+            let jokers = hasJs(in: hand)
+            
+            if jokers > 0 && jokers <= 4 {
+                if let jIndex = counts.index(forKey: "J") {
+                    counts.remove(at: jIndex)
+                }
+                if let maxKey = counts.keys.first(where: { counts[$0] == counts.values.max() }) {
+                    counts[maxKey]! += jokers
+                }
+            }
+        }
+        
+        let sortedCounts = counts.values.sorted(by: { $0 > $1 })
+        
+        switch sortedCounts {
+        case [5]:
+            return .fiveOfKind
+        case [4, 1]:
+            return .fourOfKind
+        case [3, 2]:
+            return .fullHouse
+        case [3, 1, 1]:
+            return .threeOfKind
+        case [2, 2, 1]:
+            return .twoPair
+        case [2, 1, 1, 1]:
+            return .onePair
+        default:
+            return .highCard
         }
     }
-
+    
     func compare(first hand1: String, with hand2: String) -> Int {
         let type1 = getType(of: hand1)
         let type2 = getType(of: hand2)
-
+        
         if type1 != type2 {
-            return type2 - type1
+            return type2.rawValue - type1.rawValue
         }
         
         for (card1, card2) in zip(hand1, hand2) {
@@ -43,25 +79,20 @@ func calculateWinnings(of handsAndBids: [Hand]) -> Int {
         }
         return 0
     }
-
+    
     let sortedHands = handsAndBids.sorted { compare(first: $0.0, with: $1.0) > 0 }
     
     let totalWinnings = sortedHands.enumerated().reduce(0) { (total, handAndBid) in
         let (index, (hand, bid)) = handAndBid
         return total + (sortedHands.count - index) * bid
     }
-
+    
     return totalWinnings
 }
 
-func main(_ input: String) {
-    
-    let handsAndBids: [Hand] = data.components(separatedBy: "\n").map { line in (line.components(separatedBy: " ")[0], Int(line.components(separatedBy: " ")[1]) ?? 0) }
-    
-    let result = calculateWinnings(of: handsAndBids)
+func hasJs(in hand: String) -> Int {
+    return hand.filter { $0 == "J" }.count
 }
-
-
 
 
 let test = """
