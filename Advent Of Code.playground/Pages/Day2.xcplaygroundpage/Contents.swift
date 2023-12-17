@@ -35,7 +35,7 @@ func processGame(from input: String) -> Result {
         
         guard let colonIndex = line.firstIndex(of: ":") else { continue }
         
-        guard let gameId =  line[..<colonIndex].components(separatedBy: .whitespaces).compactMap { Int($0) }.first else { continue }
+        guard let gameId =  line[..<colonIndex].components(separatedBy: .whitespaces).compactMap({ Int($0) }).first else { continue }
         
         let gameSets = line.suffix(from: line.index(after: colonIndex)).components(separatedBy: ";")
         
