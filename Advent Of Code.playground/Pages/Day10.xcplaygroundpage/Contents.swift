@@ -6,14 +6,18 @@ struct Point: Hashable {
     let y: Int
 }
 
+// MARK: - Task 1
+
 func calculateDistance(_ input: String) -> Int {
     
     
-    let lines = data.components(separatedBy: "\n")
+    var lines = data.components(separatedBy: "\n")
         .filter { !$0.isEmpty }
         .map { Array($0) }
     
     let startPoint = findStartPoint(lines: lines)
+   
+    
     
     var visited: Set<Point> = []
     var distances: [Point: Int] = [:]
@@ -33,6 +37,7 @@ func calculateDistance(_ input: String) -> Int {
     }
     
     return distances.values.max() ?? 0
+    
 }
 
 func getNeighbors(_ x: Int, _ y: Int, _ lines: [[Character]]) -> [Point] {
@@ -77,9 +82,150 @@ func findStartPoint(lines: [[Character]]) -> Point {
 }
 
 
+
+
+
+// MARK: - Task 2
+
+
+func calculateEnclosedTiles(in data: String) -> Int {
+    
+    var lines = data.components(separatedBy: "\n")
+        .filter { !$0.isEmpty }
+        .map { Array($0) }
+    
+    let startPoint = findStartPoint(lines: lines)
+    
+    var visited: Set<Point> = []
+    var stack: [Point] = [startPoint]
+    
+    while !stack.isEmpty {
+        let point = stack.removeLast()
+        if visited.contains(point) { continue }
+        visited.insert(point)
+        
+        for ngb in getNeighborsPart2(point.x, point.y, lines: &lines) {
+            if visited.contains(ngb) { continue }
+            stack.append(ngb)
+        }
+    }
+    
+    var res = 0
+    
+    for (y, row) in lines.enumerated() {
+        for (x, col) in row.enumerated() {
+            let point = Point(x: x, y: y)
+            
+            if !visited.contains(point) {
+                let invs = countInversions(x, y, lines: lines, visited: visited)
+                if invs % 2 == 1 {
+                    res += 1
+                }
+            }
+        }
+    }
+    
+    return res
+}
+
+
+func getNeighborsPart2(_ x: Int, _ y: Int, lines: inout [[Character]]) -> [Point] {
+    var res: [Point] = []
+    for point in getDirectionNeighborsForPart2(x, y, &lines) {
+        let newX = x + point.x
+        let newY = y + point.y
+        if isValidPoint(newX, newY, lines) {
+            res.append(Point(x: newX, y: newY))
+        }
+    }
+    return res
+}
+
+func getDirectionNeighborsForPart2(_ x: Int, _ y: Int, _ lines: inout [[Character]]) -> [Point] {
+    let directions: [(Int, Int)] = [
+        (1, 0), (-1, 0), (0, 1), (0, -1)
+    ]
+    var result: [Point] = []
+    
+    let validDirections: [Character: [Point]] = [
+        "|": [Point(x: 1, y: 0), Point(x: -1, y: 0)],
+        "-": [Point(x: 0, y: 1), Point(x: 0, y: -1)],
+        "L": [Point(x: -1, y: 0), Point(x: 0, y: 1)],
+        "J": [Point(x: -1, y: 0), Point(x: 0, y: -1)],
+        "7": [Point(x: 1, y: 0), Point(x: 0, y: -1)],
+        "F": [Point(x: 1, y: 0), Point(x: 0, y: 1)],
+        ".": []
+    ]
+    
+    var directionsPoints: [Point] = []
+    
+    if lines[x][y] == "S" {
+        
+        for (i, j) in directions {
+            let newX = x + i
+            let newY = y + j
+            
+            
+            if isValidPoint(newX, newY, lines) {
+                
+                let neighbors = getNeighborsPart2(newX, newY, lines: &lines)
+                
+                if neighbors.contains(
+                    where: { point in  point == Point(x: x, y: y) }) {
+                    
+                    directionsPoints.append((Point(x: i, y: j)))
+                    result.append((Point(x: newX, y: newY)))
+                }
+            }
+        }
+        
+        var correspondingChar: Character?
+        
+        for (char, ds) in validDirections {
+            if arraysEqual(ds, directionsPoints) {
+                correspondingChar = char
+                break
+            }
+        }
+        
+        if let char = correspondingChar {
+            lines[x][y] = char
+        }
+        
+        return result
+    } else {
+        return validDirections[lines[x][y], default: []]
+    }
+}
+
+
+// Count the number of "inversions" in a row
+func countInversions(_ x: Int, _ y: Int, lines: [[Character]], visited: Set<Point>) -> Int {
+    let line = lines[x]
+    var count = 0
+    for k in 0..<y {
+        if visited.contains(Point(x: x, y: k)) {
+            if line[k] == "J" || line[k] == "L" || line[k] == "|" {
+                count += 1
+            }
+        }
+    }
+    return count
+}
+
+
+func arraysEqual<T: Equatable>(_ array1: [T], _ array2: [T]) -> Bool {
+    return array1.count == array2.count && zip(array1, array2).allSatisfy { $0.0 == $0.1 }
+}
+
+
+
+
 func main(_ input: String) {
     print(calculateDistance(input))
+    print(calculateEnclosedTiles(in: input))
 }
+
 
 
 
